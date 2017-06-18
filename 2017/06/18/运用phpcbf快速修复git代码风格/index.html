@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    
+<title>运用phpcbf快速修复git代码风格 | 邓小龙的博客</title>
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+  <meta name="description" content="邓小龙博客，致力于简单可靠的lnmp架构"/>
+
+
+
+  <meta name="keywords" content="邓小龙,lnmp,php,mysql,linux,nginx" />
+
+
+
+  <meta name="baidu-site-verification" content="sdfd" />
+
+
+
+<meta name="theme-color" content="#f75357" />
+<meta name="msapplication-navbutton-color" content="#f75357">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f75357">
+
+
+
+
+  <link rel="shortcut icon" href="/images/favicon.ico">
+
+
+<link rel="alternate" type="application/atom+xml" title="邓小龙的博客" href="/atom.xml">
+
+<meta name="description" content="由于历史原因，团队之前对于php代码标准没有深入的认识，因此以前对于代码风格这件事就放羊了。后来，随着团队规模的扩大，我们逐步意识到了代码风格不同意对于整体合作的不利影响，再加上我们对于代码加入了review机制，看到各种各样不同风格的代码，总是会对代码本身意图的理解造成一定程度的障碍。在这样的背景下，我们开始在代码加入了强制性的标准——PSR2。而对于命名空间，由于老代码根本就没有考虑这块，而且">
+<meta name="keywords" content="git,phpcbf,filter-branch,tree-filter">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运用phpcbf快速修复git代码风格">
+<meta property="og:url" content="http://dengxiaolong.com/2017/06/18/运用phpcbf快速修复git代码风格/index.html">
+<meta property="og:site_name" content="邓小龙的博客">
+<meta property="og:description" content="由于历史原因，团队之前对于php代码标准没有深入的认识，因此以前对于代码风格这件事就放羊了。后来，随着团队规模的扩大，我们逐步意识到了代码风格不同意对于整体合作的不利影响，再加上我们对于代码加入了review机制，看到各种各样不同风格的代码，总是会对代码本身意图的理解造成一定程度的障碍。在这样的背景下，我们开始在代码加入了强制性的标准——PSR2。而对于命名空间，由于老代码根本就没有考虑这块，而且">
+<meta property="og:updated_time" content="2017-06-18T15:04:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="运用phpcbf快速修复git代码风格">
+<meta name="twitter:description" content="由于历史原因，团队之前对于php代码标准没有深入的认识，因此以前对于代码风格这件事就放羊了。后来，随着团队规模的扩大，我们逐步意识到了代码风格不同意对于整体合作的不利影响，再加上我们对于代码加入了review机制，看到各种各样不同风格的代码，总是会对代码本身意图的理解造成一定程度的障碍。在这样的背景下，我们开始在代码加入了强制性的标准——PSR2。而对于命名空间，由于老代码根本就没有考虑这块，而且">
+<link rel="stylesheet" href="/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+
+  <script id="baidu_analytics">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?aaa";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  </head>
+  <body>
+    <header class="header">
+  <div class="site-brand">
+    <div class="container">
+      <h1 class="site-title">
+        <a class="site-title-link" href="/.">
+          邓小龙的博客
+        </a>
+      </h1>
+    </div>
+  </div>
+  <nav class="site-nav">
+    <div class="container">
+      <ul class="site-nav-menu">
+        
+          
+          
+          <li class="site-nav-item">
+            <a class="site-nav-link " href="/">
+              
+              
+                首页
+              
+            </a>
+          </li>
+        
+          
+          
+          <li class="site-nav-item">
+            <a class="site-nav-link " href="/categories/tech/">
+              
+              
+                技术
+              
+            </a>
+          </li>
+        
+      </ul>
+      <div class="site-nav-icon">
+        <a class="site-icon-link" href="/atom.xml">
+          <i class="fa fa-rss"></i>
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+    <div class="content">
+      <div class="container">
+  <main class="main">
+    <article class="article">
+  <header class="article-header">
+    <div class="article-meta">
+  <div class="article-date">
+    2017年6月18日
+  </div>
+  <div class="article-categories">
+    <i class="fa fa-caret-right"></i>
+    
+      <a class="article-category" href="/categories/tech/">
+        tech
+      </a>
+    
+  </div>
+</div>
+
+    <h2 class="article-title">
+  
+    运用phpcbf快速修复git代码风格
+  
+</h2>
+
+  </header>
+  <div class="article-body markdown">
+    
+      <p>由于历史原因，团队之前对于php代码标准没有深入的认识，因此以前对于代码风格这件事就放羊了。后来，随着团队规模的扩大，我们逐步意识到了代码风格不同意对于整体合作的不利影响，再加上我们对于代码加入了review机制，看到各种各样不同风格的代码，总是会对代码本身意图的理解造成一定程度的障碍。在这样的背景下，我们开始在代码加入了强制性的标准——PSR2。而对于命名空间，由于老代码根本就没有考虑这块，而且命名空间的影响也不大，因此我们放弃了这部分标准。</p>
+<p>我们对于代码风格的实施，采用了一种灰度的方式实现。即对修改的代码，削减了部分代码标准，而对新加的代码，标准则相对严格一些。</p>
+<p>最近由于业务需要，对一些线下项目有了较多的接触，发现其代码风格已经是颇难接受了。一些代码大小写不统一，格式不统一，最普遍的问题，则是<code>\t</code>的使用。因此萌发将这个项目的整体风格都修正一下的想法。<br><a id="more"></a></p>
+<h2 id="基本思路"><a href="#基本思路" class="headerlink" title="基本思路"></a>基本思路</h2><p>因为我们代码风格的控制是基于phpcs的，因此修复代码的任务就交给phpcbf了。最简单的办法，最简单的命令就是</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">phpcbf ./ --standard=PSR2 --extensions=php</div></pre></td></tr></table></figure>
+<p>这样就能对整体代码进行整体修复了。</p>
+<p>不过，问题也是显而易见的，经过这样一次修复，在这次commit之后的代码再要通过<code>git blame</code>查询某行代码的修改者的话，就不再那么简单了。这也是之前的项目做完这样的修复之后遇到的最显著问题之一。因此，最好能避免掉这个问题。</p>
+<p>那么，比较彻底的方式，当然就是对所有历史版本的文件都用phpcbf处理一次，这样就能让git库的所有历史版本都保持基本的代码规范（phpcbf只能处理简单的修复工作，并不能修复所有的有问题的代码），而且原来所有的历史变动信息也还在。当然，也有副作用，各个commit的版本号都会出现变动。不过，这个副作用比起前面git blame的问题，可以忽略了。</p>
+<h2 id="v1-0-0"><a href="#v1-0-0" class="headerlink" title="v1.0.0"></a>v1.0.0</h2><p>最简单最直接也是最容易想到的办法，就是用<code>git filter-branch</code>命令，然后再用<code>--tree-filter</code>选项对整个历史代码格式化一下。代码如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git filter-branch --tree-filter="phpcbf ./ --standard=PSR2 --extensions=php" --prune-empty -f</div></pre></td></tr></table></figure>
+<p>这个命令里边，<code>filter-branch</code>这个命令对于git而言，算是一个核武器了，因为它可以通过脚本的方式对大量提交进行修改。比如，全局地修改邮箱地址，或者把某一个文件从每一个提交中都删除掉。</p>
+<p><code>--tree-filter</code>选项会把所有历史提交版本依次提取到指定目录里（默认是<code>.git-rewrite</code>，也可以通过-d选项指定此目录），然后通过此选项的值对应的命令对这些提交进行处理。</p>
+<p><code>--prune-empty</code>选项的话，会将重写历史后一些没有任何修改内容的commit直接去掉。也就是说，原来有1000个commit以后，加上这个选项后，有可能变成&lt;1000个提交。</p>
+<p><code>-f</code> 如果临时目录已经存在，git会拒绝执<code>git filter-branch</code>命令，加上此命令后，则会强制执行此命令。</p>
+<p>好，开始执行了，这个项目约有1200个commit，所以整体跑下来还真的是需要蛮长时间的。刚开始，由于代码量有限，还蛮快的，几秒钟就处理完了一个commit，但是越到后面，每次commit处理的时间就越长。不过，这个还不是主要的问题，主要的问题在于这样执行过程中，遇到一些有报错的，phpcbf进程的退出码不为0，会导致git中断处理流程。所以，得包装一下这个命令，使其退出码一直为0。因此，出现了升级版v1.0.1。</p>
+<h2 id="v1-0-1"><a href="#v1-0-1" class="headerlink" title="v1.0.1"></a>v1.0.1</h2><p>写一个脚本phpcbf.sh。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#</span>! /bin/bash</div><div class="line">phpcbf ./ --standard=PSR2 --extensions=php</div><div class="line">exit 0</div></pre></td></tr></table></figure></p>
+<p>同时，调用命令变成了：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git filter-branch --tree-filter="sh phpcbf.sh" --prune-empty -f</div></pre></td></tr></table></figure></p>
+<p>这样一来，能保障及时phpcbf执行过程中即使有报错，也不会影响程序继续执行。不过，没有等执行完毕，我就中止了这个命令。因为，要跑完1200多个commit，还真得花上好几个小时，太耗时间了。怎么办呢？在不改动代码前提的基础下，我的想法是把代码放到内存里去执行。</p>
+<h2 id="v1-0-2"><a href="#v1-0-2" class="headerlink" title="v1.0.2"></a>v1.0.2</h2><p>怎么放内存呢？听起来好玄乎，但是在linux系统上，却是很简单的事情——把代码放到<code>/dev/shm/</code>这个目录就行了。用<code>df</code>命令就可以看到这个目录所在了：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">$</span>: df -h</div><div class="line">Filesystem                     Size  Used Avail Use% Mounted on</div><div class="line">/dev/mapper/vg_livecd-lv_root   50G   28G   21G  58% /</div><div class="line">tmpfs                          1.9G     0  1.9G   0% /dev/shm</div><div class="line">/dev/sda1                      485M   40M  420M   9% /boot</div><div class="line">/dev/mapper/vg_livecd-lv_home  439G  264G  153G  64% /home</div><div class="line">/dev/mapper/lvm--data-data     483G   83G  375G  19% /data</div></pre></td></tr></table></figure>
+<p>/dev/shm/是linux下一个目录，/dev/shm目录不在磁盘上，而是在内存里，因此使用linux /dev/shm/的效率非常高，直接写进内存。对于磁盘io不高的虚拟机，把文件IO较多的东东丢到这个目录来处理，还是蛮适合的。事实证明，这个也确实比在硬盘的目录里边处理要快很多。</p>
+<p>不过，鉴于处理这个问题的时候，已经很晚了，而且，这样处理起来效率还是很低，所以，我就直接让其在机器里边跑着，睡觉去了。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">nohup git filter-branch --tree-filter="sh phpcbf.sh" --prune-empty -f &amp;</div></pre></td></tr></table></figure></p>
+<p><code>nohup</code>命令可以保证，即使ssh断掉，这个进程也会继续执行，<code>&amp;</code>则是表示进程进入后台运行。</p>
+<p>就算是用了内存，就算是跑了好几个小时，早上我起来的时候一看，程序也还在跑着呢，看起来，这样的机制还是得来个大的升级才行。</p>
+<h2 id="v2-0-0"><a href="#v2-0-0" class="headerlink" title="v2.0.0"></a>v2.0.0</h2><p>进入到2.0版本，是因为，我把原来的单进程的方式，修改成了多进程的模式。毕竟，phpcbf进程对于每个文件而言，都是独立运行的，不会对彼此有相互依赖，因此，升级到多进程模式是没有任何问题的，只需要考虑好使用过少个进程，怎么给它们派活就行了。废话少说，直接上代码。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#! /home/work/php/bin/php</span></div><div class="line"><span class="meta">&lt;?php</span></div><div class="line">$curdir = getcwd();</div><div class="line"><span class="comment">// 找出层级为2的目录，分别配置一个进程予以处理，在层级1目录的文件，后续单独操作</span></div><div class="line">exec(sprintf(<span class="string">'find %s -maxdepth 2 -mindepth 2 -type d'</span>, $curdir), $dirs);</div><div class="line"><span class="keyword">foreach</span>($dirs <span class="keyword">as</span> $key =&gt; $dir) &#123;</div><div class="line">    $dir = trim($dir);</div><div class="line">    <span class="keyword">if</span> (!$dir || $dir == <span class="string">'.'</span> || $dir == <span class="string">'..'</span>) &#123;</div><div class="line">        <span class="keyword">unset</span>($dirs[$key]);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// phpcbf处理的时候，如果没有任何一个可用文件，会报错，因此提前检查</span></div><div class="line">    $cmd = sprintf(<span class="string">"find %s -type f -name *.php|wc -l"</span>, $dir);</div><div class="line">    ob_start();</div><div class="line">    $count = system($cmd);</div><div class="line">    ob_get_clean();</div><div class="line">    <span class="keyword">if</span> (!$count) &#123;</div><div class="line">        <span class="keyword">unset</span>($dirs[$key]);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">$dirs = array_values($dirs);</div><div class="line"><span class="keyword">for</span> ($i = <span class="number">1</span>, $l = count($dirs); $i &lt; $l; ++$i) &#123; </div><div class="line">    $pid = pcntl_fork(); </div><div class="line"></div><div class="line">    <span class="keyword">if</span> (!$pid) &#123; </div><div class="line">        $dealDir = $dirs[$i];</div><div class="line">        <span class="keyword">print</span> <span class="string">"In child $i\n"</span>; </div><div class="line">        $cmd = sprintf(<span class="string">"phpcbf --standard=PSR2 --extensions=php %s"</span>, $dealDir);</div><div class="line">        <span class="keyword">echo</span> $cmd.PHP_EOL;</div><div class="line"></div><div class="line">        system($cmd);</div><div class="line"></div><div class="line">        <span class="keyword">exit</span>($i); </div><div class="line">    &#125; </div><div class="line">&#125; </div><div class="line"></div><div class="line"><span class="keyword">while</span> (pcntl_waitpid(<span class="number">0</span>, $status) != <span class="number">-1</span>) &#123; </div><div class="line">    $status = pcntl_wexitstatus($status); </div><div class="line">    <span class="keyword">echo</span> <span class="string">"Child $status completed\n"</span>; </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样一来，多进程模式开始处理了，效率一下子上来了，原来五六个小时处理的事情，现在也能缩短了一个小时以内了。</p>
+<h3 id="处理剩余的单个文件"><a href="#处理剩余的单个文件" class="headerlink" title="处理剩余的单个文件"></a>处理剩余的单个文件</h3><p>前面处理的是二级目录里边的文件，还剩下一些单独的一级目录的文件，因为只有一个文件，所以直接在每个commit里边对单个文件应用phpcbf处理就行了。不过，这样下来，效率也不高，往往也需要几分钟才能处理完1个文件。后来，又总结了一下，提取出一种新的处理模式。</p>
+<p>考虑到同一个文件在整个git历史了，实际上改动的次数不多，而且，如果原始内容一样，那么每次应用phpcbf之后，结果应该是一样的。因此，考虑通过缓存phpcbf结果的方式来加快处理速度。直接看代码吧：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"><span class="comment">// 为了更好地知道过程中出现的问题，把错误级别提高了</span></div><div class="line">error_reporting(E_ALL);</div><div class="line">ini_set(<span class="string">'display_errors'</span>, <span class="number">1</span>);</div><div class="line"></div><div class="line">$path = getcwd().$argv[<span class="number">1</span>];</div><div class="line"><span class="comment">// 在早期的提交里，文件可能不存在</span></div><div class="line"><span class="keyword">if</span> (!is_file($path)) &#123;</div><div class="line">    <span class="keyword">exit</span>(<span class="number">0</span>);</div><div class="line">&#125;</div><div class="line"><span class="comment">// 根据内容来定义缓存文件路径</span></div><div class="line">$md5 = md5_file($path);</div><div class="line">$tmpFile = <span class="keyword">__DIR__</span>.<span class="string">'/.tmp/'</span>.$md5;</div><div class="line"><span class="keyword">if</span> (is_file($tmpFile)) &#123;</div><div class="line">    <span class="comment">// 如果缓存过结果，直接复制过来即可，不需要再次phpcbf了</span></div><div class="line">    copy($tmpFile, $path);</div><div class="line">    <span class="keyword">exit</span>(<span class="number">0</span>);</div><div class="line">&#125;</div><div class="line"><span class="comment">// 有修改的内容的话，执行phpcbf，并将结果缓存起来</span></div><div class="line">$cmd = <span class="string">'phpcbf --standard=PSR2 '</span>.$path;</div><div class="line">system($cmd);</div><div class="line">copy($path, $tmpFile);</div><div class="line"><span class="keyword">exit</span>(<span class="number">0</span>);</div></pre></td></tr></table></figure>
+<p>通过这样一个优化，对单个文件的修改，已经可以控制到60s左右了。</p>
+<h3 id="问题多多"><a href="#问题多多" class="headerlink" title="问题多多"></a>问题多多</h3><p>不过，最后看<code>git log --stat</code>的时候，还是发现有一些问题，出现了大量的*.rej文件，而且每次的提交都出现了大量文件提交。应该还是phpcbf执行出错的时候留下的文件没有及时清理导致的。而且，及时正确，这个多进程模式也还是需要小时级别才能处理好。需要再次改进。</p>
+<h2 id="v3-0-0"><a href="#v3-0-0" class="headerlink" title="v3.0.0"></a>v3.0.0</h2><p>最后，还是决定大改一次。怎么改呢？就用第2个版本里边针对单个文件处理的模式来改。因为整个git项目虽然有1200个commit之多，但是，每次对于git库的修改，实际上只涉及到几个文件，那么如果我们能将之前的代码phpcbf后的结果缓存的话，可以节省大量的时间。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">error_reporting(E_ALL);</div><div class="line">ini_set(<span class="string">'display_errors'</span>, <span class="number">1</span>);</div><div class="line"></div><div class="line"><span class="comment">// 找出所有的php文件</span></div><div class="line">$dir = getcwd();</div><div class="line">exec(<span class="string">"find $dir -type f -name *.php"</span>, $phps);</div><div class="line"></div><div class="line"><span class="keyword">foreach</span>($phps  <span class="keyword">as</span> $file) &#123;</div><div class="line">    phpfixFile($file);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 获取文件的缓存路径</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">getTmpFile</span><span class="params">($file)</span></span></div><div class="line">&#123;</div><div class="line">    $md5 = md5_file($file);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">__DIR__</span>.<span class="string">'/.tmp/'</span>.$md5;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// phpcbf一个文件</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">phpfixFile</span><span class="params">($file)</span></span></div><div class="line">&#123;</div><div class="line">    $tmpFile = getTmpFile($file);</div><div class="line">    <span class="keyword">if</span> (is_file($tmpFile)) &#123;</div><div class="line">        copy($tmpFile, $file);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        system(<span class="string">"phpcbf --standard=PSR2 $file"</span>);</div><div class="line">        copy($file, $tmpFile);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">exit</span>(<span class="number">0</span>);</div></pre></td></tr></table></figure>
+<p>这样一改，所有的东西都正常了，最后下来，大概花了860s，也就是14分钟多的样子就完成了所有代码的编码规范工作。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>从v1到v3三个方案，总体时间从6个小时降低到2个小时（处理单个有问题文件费时较多），再到15分钟，终于完成了这项工作的较为完美的蜕变。当然，在v3的基础上，如果再返回去结合多进程的话，处理速度应该还可以有一个幅度的上升。只要基于实践，不断磨合，还是可以对一件事情不断地探究和改进，使其可行性和稳定性更高的境界。</p>
+<p>最后，总结一下，对git历史进行编码规范的时候，需要注意如下几个问题：</p>
+<ol>
+<li>在内存里运行；</li>
+<li>重复代码缓存执行结果；</li>
+<li>多实践多推敲；</li>
+</ol>
+
+    
+  </div>
+  
+    <footer class="article-footer">
+      <div class="article-tags">
+  
+    <a class="article-tag" href="/tags/git/">
+      <i class="fa fa-tag"></i>
+      git
+    </a>
+  
+    <a class="article-tag" href="/tags/phpcbf/">
+      <i class="fa fa-tag"></i>
+      phpcbf
+    </a>
+  
+    <a class="article-tag" href="/tags/filter-branch/">
+      <i class="fa fa-tag"></i>
+      filter-branch
+    </a>
+  
+    <a class="article-tag" href="/tags/tree-filter/">
+      <i class="fa fa-tag"></i>
+      tree-filter
+    </a>
+  
+</div>
+
+      
+  <div class="article-pagination">
+    
+      <div class="next-article">
+        <a class="article-link" href="/2017/06/16/如何降低代码逻辑层次/">
+          <span class="hint">
+            <i class="fa fa-chevron-left"></i>
+            旧文章
+          </span>
+          <span class="title">如何降低代码逻辑层次</span>
+        </a>
+      </div>
+    
+    
+  </div>
+
+
+    </footer>
+  
+</article>
+
+    
+  <div id="disqus_thread">
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+  </div>
+  <script id="disqus">
+    var disqus_config = function () {
+        this.page.url = 'http://dengxiaolong.com/2017/06/18/运用phpcbf快速修复git代码风格/';
+        this.page.identifier = '2017/06/18/运用phpcbf快速修复git代码风格/';
+        this.page.title = '运用phpcbf快速修复git代码风格';
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+
+      s.src = '//dengxiaolong.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();  
+  </script>
+
+
+  </main>
+  <aside class="sidebar">
+  
+    
+  <div class="widget recent">
+    <h3 class="widget-title">最新文章</h3>
+    <ul class="recent-post">
+      
+        <li class="recent-post-item">
+          <a class="recent-post-link" href="/2017/06/18/运用phpcbf快速修复git代码风格/">
+            运用phpcbf快速修复git代码风格
+          </a>
+        </li>
+      
+        <li class="recent-post-item">
+          <a class="recent-post-link" href="/2017/06/16/如何降低代码逻辑层次/">
+            如何降低代码逻辑层次
+          </a>
+        </li>
+      
+        <li class="recent-post-item">
+          <a class="recent-post-link" href="/2017/06/16/hello-world/">
+            Hello,World
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+  
+    
+  <div class="widget tagcloud">
+    <h3 class="widget-title">
+      标签云
+    </h3>
+    <div class="tagcloud-wrapper">
+      <a href="/tags/逻辑层次/" style="font-size: 16px;">逻辑层次</a> <a href="/tags/git/" style="font-size: 16px;">git</a> <a href="/tags/phpcbf/" style="font-size: 16px;">phpcbf</a> <a href="/tags/filter-branch/" style="font-size: 16px;">filter-branch</a> <a href="/tags/tree-filter/" style="font-size: 16px;">tree-filter</a> <a href="/tags/规范/" style="font-size: 16px;">规范</a>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget categories">
+    <h3 class="widget-title">
+      分类目录
+    </h3>
+    <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/tech/">tech</a><span class="category-list-count">2</span></li></ul>
+  </div>
+
+
+  
+    <div class="widget links">
+  <h3 class="widget-title">
+    友情链接
+  </h3>
+  <ul class="link-list">
+    
+      <li class="link-list-item">
+        <a class="link-list-link" href="http://wiki.huimang.com/">
+          wiki
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+</aside>
+
+</div>
+
+    </div>
+    <footer class="footer">
+  <div class="container">
+    <p class="copyright">
+      
+      Copyright &copy; 2017. All Rights Reserved.
+    </p>
+    <p class="power-by">
+      Power by <a href="https://hexo.io/">Hexo</a> and Theme by <a href="https://github.com/ahonn/hexo-theme-hello">Hello</a>.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
