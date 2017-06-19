@@ -41,7 +41,7 @@
 <meta property="og:url" content="http://dengxiaolong.com/2017/06/16/如何降低代码逻辑层次/index.html">
 <meta property="og:site_name" content="邓小龙的博客">
 <meta property="og:description" content="不管是作为后端语言的php（用java、go的别撇嘴，在我们的项目里边，php是绝对的后端），还是作为前端的js，很多早期甚至中级的开发者，都没有注意到代码逻辑层次的问题。更没有注意到的是，代码逻辑层次太多的代码，很容易买下隐患，而且可读性和可扩展性都比较差，容易形成bug。 今天审核代码的时候，遇到一个逻辑层次非常多的代码，当时就被震撼到了。不过在自己处于那个阶段的时候，何尝没有过类似的问题和烦">
-<meta property="og:updated_time" content="2017-06-18T15:02:16.000Z">
+<meta property="og:updated_time" content="2017-06-19T06:33:44.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="如何降低代码逻辑层次">
 <meta name="twitter:description" content="不管是作为后端语言的php（用java、go的别撇嘴，在我们的项目里边，php是绝对的后端），还是作为前端的js，很多早期甚至中级的开发者，都没有注意到代码逻辑层次的问题。更没有注意到的是，代码逻辑层次太多的代码，很容易买下隐患，而且可读性和可扩展性都比较差，容易形成bug。 今天审核代码的时候，遇到一个逻辑层次非常多的代码，当时就被震撼到了。不过在自己处于那个阶段的时候，何尝没有过类似的问题和烦">
@@ -143,7 +143,7 @@
       <p>不管是作为后端语言的php（用java、go的别撇嘴，在我们的项目里边，php是绝对的后端），还是作为前端的js，很多早期甚至中级的开发者，都没有注意到代码逻辑层次的问题。更没有注意到的是，代码逻辑层次太多的代码，很容易买下隐患，而且可读性和可扩展性都比较差，容易形成bug。</p>
 <p>今天审核代码的时候，遇到一个逻辑层次非常多的代码，当时就被震撼到了。不过在自己处于那个阶段的时候，何尝没有过类似的问题和烦恼呢，因此，还是分享一下如何化解其这种多逻辑层次的思路。</p>
 <a id="more"></a>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">traslateList</span><span class="params">($stores)</span></span></div><div class="line">&#123;</div><div class="line">    $storeIds = !<span class="keyword">empty</span>($stores[<span class="string">'data'</span>]) ? array_column($stores[<span class="string">'data'</span>], <span class="string">'store_id'</span>) : <span class="keyword">array</span>();</div><div class="line">    <span class="keyword">if</span> ($storeIds) &#123;</div><div class="line">        <span class="comment">// ...</span></div><div class="line">        <span class="keyword">foreach</span> ($stores[<span class="string">'data'</span>] <span class="keyword">as</span> &amp;$data) &#123;</div><div class="line">            <span class="comment">//子账号名称</span></div><div class="line">            <span class="keyword">foreach</span> ($subacc <span class="keyword">as</span> $k =&gt; $sub) &#123;</div><div class="line">                ...</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">foreach</span> ($data <span class="keyword">as</span> $key =&gt; $val) &#123;</div><div class="line">                <span class="keyword">if</span> (in_array($key, $filter) &amp;&amp; <span class="keyword">empty</span>($val)) &#123;</div><div class="line">                    $data[$key] = <span class="string">"- -"</span>;</div><div class="line">                &#125;</div><div class="line">                <span class="comment">//区别主账号子账号，是主账号给列出来</span></div><div class="line">                <span class="keyword">if</span> ($key == <span class="string">"sub_count"</span>) &#123;</div><div class="line">                    <span class="keyword">if</span> (!<span class="keyword">empty</span>($val)) &#123;</div><div class="line">                        $data[<span class="string">'uid_type'</span>] = <span class="string">"主账号："</span>;</div><div class="line">                        <span class="keyword">foreach</span> ($data[<span class="string">'child_name'</span>] <span class="keyword">as</span> $child) &#123;</div><div class="line">                            $data[<span class="string">'uid_type'</span>] .= $child[<span class="string">'uid_uname'</span>].<span class="string">","</span>;</div><div class="line">                        &#125;</div><div class="line">                    &#125; <span class="keyword">else</span> &#123;</div><div class="line">                        $data[<span class="string">'uid_type'</span>] = <span class="string">"子账号"</span>;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> ($key == <span class="string">"sub_count"</span>) &#123;</div><div class="line">                    ...</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> $stores;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">translateList</span><span class="params">($stores)</span></span></div><div class="line">&#123;</div><div class="line">    $storeIds = !<span class="keyword">empty</span>($stores[<span class="string">'data'</span>]) ? array_column($stores[<span class="string">'data'</span>], <span class="string">'store_id'</span>) : <span class="keyword">array</span>();</div><div class="line">    <span class="keyword">if</span> ($storeIds) &#123;</div><div class="line">        <span class="comment">// ...</span></div><div class="line">        <span class="keyword">foreach</span> ($stores[<span class="string">'data'</span>] <span class="keyword">as</span> &amp;$data) &#123;</div><div class="line">            <span class="comment">//子账号名称</span></div><div class="line">            <span class="keyword">foreach</span> ($subacc <span class="keyword">as</span> $k =&gt; $sub) &#123;</div><div class="line">                ...</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">foreach</span> ($data <span class="keyword">as</span> $key =&gt; $val) &#123;</div><div class="line">                <span class="keyword">if</span> (in_array($key, $filter) &amp;&amp; <span class="keyword">empty</span>($val)) &#123;</div><div class="line">                    $data[$key] = <span class="string">"- -"</span>;</div><div class="line">                &#125;</div><div class="line">                <span class="comment">//区别主账号子账号，是主账号给列出来</span></div><div class="line">                <span class="keyword">if</span> ($key == <span class="string">"sub_count"</span>) &#123;</div><div class="line">                    <span class="keyword">if</span> (!<span class="keyword">empty</span>($val)) &#123;</div><div class="line">                        $data[<span class="string">'uid_type'</span>] = <span class="string">"主账号："</span>;</div><div class="line">                        <span class="keyword">foreach</span> ($data[<span class="string">'child_name'</span>] <span class="keyword">as</span> $child) &#123;</div><div class="line">                            $data[<span class="string">'uid_type'</span>] .= $child[<span class="string">'uid_uname'</span>].<span class="string">","</span>;</div><div class="line">                        &#125;</div><div class="line">                    &#125; <span class="keyword">else</span> &#123;</div><div class="line">                        $data[<span class="string">'uid_type'</span>] = <span class="string">"子账号"</span>;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> ($key == <span class="string">"sub_count"</span>) &#123;</div><div class="line">                    ...</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> $stores;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>初略算了一下，最深的逻辑层次竟然达到7层。逻辑层次和空间维度差不多，每增加一个维度，信息和变数就增加指数级的变化。对于空间维度，我们最能理解的也就是3维了。实际上，对于代码的逻辑层次，要想比较顺畅地理解下来，3层也就是一个临界点了，最大的话，就得烧脑了。</p>
 <p>那么，怎么降低代码的逻辑层次呢？我对开发人员给出了几个建议：</p>
 <ol>
@@ -216,27 +216,18 @@
 </article>
 
     
-  <div id="disqus_thread">
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
-  </div>
-  <script id="disqus">
-    var disqus_config = function () {
-        this.page.url = 'http://dengxiaolong.com/2017/06/16/如何降低代码逻辑层次/';
-        this.page.identifier = '2017/06/16/如何降低代码逻辑层次/';
-        this.page.title = '如何降低代码逻辑层次';
-    };
-    (function() {
-    var d = document, s = d.createElement('script');
-
-      s.src = '//dengxiaolong.disqus.com/embed.js';
-
-    s.setAttribute('data-timestamp', +new Date());
-    (d.head || d.body).appendChild(s);
-    })();  
-  </script>
+<div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+<script src="https://img1.cache.netease.com/f2e/tie/yun/sdk/loader.js"></script>
+<script>
+var cloudTieConfig = {
+  url: document.location.href, 
+  sourceId: "",
+  productKey: "",
+  target: "cloud-tie-wrapper"
+};
+var yunManualLoad = true;
+Tie.loader("", true);
+</script>
 
 
   </main>
