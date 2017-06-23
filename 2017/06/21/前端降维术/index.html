@@ -41,7 +41,7 @@
 <meta property="og:url" content="http://dengxiaolong.com/2017/06/21/前端降维术/index.html">
 <meta property="og:site_name" content="邓小龙的博客">
 <meta property="og:description" content="这里说的前端，指的是传统意义上的前端，即包括HTML、css、javascript三种技术手段的前端。“降维”，顾名思义，就是降低维度，使问题涉及的因素减少，变得更加容易解决，而且解决方案较为简单可靠。 在著名的刘慈欣的科幻小说《三体》里，”降维攻击“就作为一种常见于宇宙高级文明攻击低级文明的手段。比如，生活在四维世界的人们，他们是用”降维攻击“对付三位世界的人们。虽然与此同时，他们自身也会降维，">
-<meta property="og:updated_time" content="2017-06-23T02:03:03.000Z">
+<meta property="og:updated_time" content="2017-06-23T02:10:04.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="前端降维术（6月23日增加排序一节）">
 <meta name="twitter:description" content="这里说的前端，指的是传统意义上的前端，即包括HTML、css、javascript三种技术手段的前端。“降维”，顾名思义，就是降低维度，使问题涉及的因素减少，变得更加容易解决，而且解决方案较为简单可靠。 在著名的刘慈欣的科幻小说《三体》里，”降维攻击“就作为一种常见于宇宙高级文明攻击低级文明的手段。比如，生活在四维世界的人们，他们是用”降维攻击“对付三位世界的人们。虽然与此同时，他们自身也会降维，">
@@ -150,7 +150,7 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ids = explode(<span class="string">','</span>, $_POST[<span class="string">'ids'</span>]);</div><div class="line">DataModel::sortIds($ids);</div></pre></td></tr></table></figure>
 <p>在这个方案里边，需要我们掌握html元素自定义属性以及js的数组的基本用法。而一些对js数组不熟的同学，可能还会想到通过各个id后面拼接逗号构建id的字符串。</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> ids = <span class="string">''</span>;</div><div class="line">$(<span class="string">'sortList li'</span>).each(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    ids = ids + $(<span class="keyword">this</span>).data(<span class="string">'id'</span>) + <span class="string">','</span>;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<p>设置，为了使拼接的字符串最后不保留,，他们需要掌握一些额外的技巧：</p>
+<p>甚至，为了去掉拼接的字符串中最后的“,”，他们需要掌握一些额外的技巧：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> ids = <span class="string">''</span>;</div><div class="line">$(<span class="string">'sortList li'</span>).each(<span class="function"><span class="keyword">function</span>(<span class="params">i</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (i == <span class="number">0</span>) &#123;</div><div class="line">        ids = $(<span class="keyword">this</span>).data(<span class="string">'id'</span>);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        ids = ids + <span class="string">','</span> + $(<span class="keyword">this</span>).data(<span class="string">'id'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
 <p>然而，对于这类需要将数据保存到服务端的交互，使用form和基础表单控件来做，根本就不需要掌握自定义属性以及js数组算法等知识。</p>
 <h3 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h3><p>改进后的前端代码：</p>
